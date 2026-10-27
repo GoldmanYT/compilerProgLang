@@ -464,7 +464,11 @@ class Scanner:
         self.code: str = code
         self.state: State = State.INITIAL
         self.pos: int = 0
-        self.symbol_table: list[Identifier] = []
+        self.id_table: list[Identifier] = [
+            Identifier(TypeCode.INTEGER.value, Category.TYPE_NAME, TypeCode.INTEGER),
+            Identifier(TypeCode.FLOAT.value, Category.TYPE_NAME, TypeCode.FLOAT),
+            Identifier(TypeCode.BOOLEAN.value, Category.TYPE_NAME, TypeCode.BOOLEAN),
+        ]
 
         if not self.code.endswith(Char.EOF.value):
             self.code += Char.EOF.value
@@ -489,7 +493,7 @@ class Scanner:
             return token
 
         try:
-            i: int = [symbol.lex for symbol in self.symbol_table].index(token.lex)
+            i: int = [symbol.lex for symbol in self.id_table].index(token.lex)
         except ValueError:
             i: int = -1
 
@@ -498,14 +502,14 @@ class Scanner:
             return token
 
         if token.code == Code.LC_NUM and self.state == State.DIGIT_OTHER:
-            symbol = Identifier(token.lex, Category.CONST, TypeCode.INT)
+            symbol = Identifier(token.lex, Category.CONST, TypeCode.INTEGER)
         elif token.code == Code.LC_NUM and self.state == State.DIGIT_DOT_DIGIT_OTHER:
             symbol = Identifier(token.lex, Category.CONST, TypeCode.FLOAT)
         else:
             symbol = Identifier(token.lex)
 
-        token.attr = len(self.symbol_table)
-        self.symbol_table.append(symbol)
+        token.attr = len(self.id_table)
+        self.id_table.append(symbol)
 
         return token
 
@@ -539,6 +543,6 @@ class Scanner:
 
 
 if __name__ == '__main__':
-    scanner = Scanner('procedure15 var15 while15 true false ')
+    scanner = Scanner('procedure15 var15 while15 true false integer float boolean')
     print(scanner.get_tokens())
     print(list(Scanner.KEYWORDS.keys()))
