@@ -2,7 +2,7 @@ from category import Category
 from typecode import TypeCode
 
 
-class Symbol:
+class Identifier:
     def __init__(
             self,
             lex: str,
@@ -13,4 +13,4 @@ class Symbol:
         self.lex: str = lex
         self.category: Category = category
         self.type_code: TypeCode = type_code
-        self.width: int = width
+        self.width: int = width if type_code == TypeCode.NO_TYPE else len(type_code)

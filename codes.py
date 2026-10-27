@@ -9,7 +9,7 @@ class Code(Enum):
     LC_WHILE = 'while'  # while15
     LC_TRUE = 'true'
     LC_FALSE = 'false'
-    LC_FULLNAME = 'KuznetsovDA'
+    LC_FULLNAME = 'FIO'
     LC_SEMI = ';'
     LC_COLON = ':'
     LC_DOT = '.'

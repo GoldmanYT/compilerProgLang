@@ -1,12 +1,12 @@
+from typing import Iterable
 from attribute import Attribute
 from category import Category
 from char import Char
 from codes import Code
 from state import State
-from symbol import Symbol
+from identifier import Identifier
 from tokens import Token
 from collections import defaultdict
-
 from typecode import TypeCode
 
 
@@ -18,8 +18,8 @@ class Scanner:
         Code.LC_CLASS.value + VARIANT: Code.LC_CLASS,
         Code.LC_VAR.value + VARIANT: Code.LC_VAR,
         Code.LC_WHILE.value + VARIANT: Code.LC_WHILE,
-        Code.LC_TRUE: Code.LC_TRUE,
-        Code.LC_FALSE: Code.LC_FALSE,
+        Code.LC_TRUE.value: Code.LC_TRUE,
+        Code.LC_FALSE.value: Code.LC_FALSE,
         'KuznetsovDA': Code.LC_FULLNAME,
     }
     STATE_TABLE: dict[Char, dict[State, State]] = {
@@ -464,7 +464,7 @@ class Scanner:
         self.code: str = code
         self.state: State = State.INITIAL
         self.pos: int = 0
-        self.symbol_table: list[Symbol] = []
+        self.symbol_table: list[Identifier] = []
 
         if not self.code.endswith(Char.EOF.value):
             self.code += Char.EOF.value
@@ -498,24 +498,23 @@ class Scanner:
             return token
 
         if token.code == Code.LC_NUM and self.state == State.DIGIT_OTHER:
-            symbol = Symbol(token.lex, Category.CONST, TypeCode.INT)
+            symbol = Identifier(token.lex, Category.CONST, TypeCode.INT)
         elif token.code == Code.LC_NUM and self.state == State.DIGIT_DOT_DIGIT_OTHER:
-            symbol = Symbol(token.lex, Category.CONST, TypeCode.FLOAT)
+            symbol = Identifier(token.lex, Category.CONST, TypeCode.FLOAT)
         else:
-            symbol = Symbol(token.lex)
+            symbol = Identifier(token.lex)
 
         token.attr = len(self.symbol_table)
         self.symbol_table.append(symbol)
 
         return token
 
-    def get_tokens(self) -> list[Token]:
-        tokens: list[Token] = []
-
+    def __iter__(self) -> Iterable[Token]:
         while self.pos < len(self.code):
-            tokens.append(self.get_next_token())
+            yield self.get_next_token()
 
-        return tokens
+    def get_tokens(self) -> list[Token]:
+        return [token for token in self]
 
     def get_next_token(self) -> Token:
         start = self.pos

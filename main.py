@@ -3,6 +3,7 @@ from tkinter.scrolledtext import ScrolledText
 from tkinter.ttk import *
 from scanner import Scanner
 from codes import Code
+from tokens import Token
 
 
 class UiLayoutConstructor:
@@ -174,13 +175,13 @@ class Window:
                 self.program_code_text.tag_add(tag, index1, index2)
 
     def start_scanner_button_action(self):
-        program_code = self.program_code_text.get('1.0', END)
-        tokens = Scanner(program_code).get_tokens()
+        program_code: str = self.program_code_text.get('1.0', END)
+        tokens: list[Token] = Scanner(program_code).get_tokens()
 
         self.scanner_output_text.delete('1.0', END)
         self.scanner_output_text.insert(END, '\n'.join(str(token) for token in tokens))
 
-        has_errors = False
+        has_errors: bool = False
         self.errors_text.delete('1.0', END)
         for token in tokens:
             if token.code == Code.LC_ERR:
@@ -190,8 +191,7 @@ class Window:
         if not has_errors:
             self.errors_text.insert(END, 'Лексический анализ успешно завершен')
 
-    @staticmethod
-    def start_sgt_button_action(self):
+    def start_sgt_button_action(self, *_):
         print('Запуск СУТ')
 
 
