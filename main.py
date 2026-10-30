@@ -144,17 +144,17 @@ class Window:
 
     def update_syntax_highlight(self, *_):
         code_to_tag = {
-            Code.LC_PROG: 'keyword',
-            Code.LC_USING: 'keyword',
-            Code.LC_CLASS: 'keyword',
-            Code.LC_VAR: 'keyword',
-            Code.LC_WHILE: 'keyword',
-            Code.LC_TRUE: 'keyword',
-            Code.LC_FALSE: 'keyword',
-            Code.LC_FULLNAME: 'keyword',
-            Code.LC_NUM: 'const',
-            Code.LC_COM: 'comment',
-            Code.LC_ERR: 'error',
+            Code.PROG: 'keyword',
+            Code.USING: 'keyword',
+            Code.CLASS: 'keyword',
+            Code.VAR: 'keyword',
+            Code.WHILE: 'keyword',
+            Code.TRUE: 'keyword',
+            Code.FALSE: 'keyword',
+            Code.FULLNAME: 'keyword',
+            Code.NUM: 'const',
+            Code.COM: 'comment',
+            Code.ERR: 'error',
         }
         for tag in code_to_tag.values():
             self.program_code_text.tag_delete(tag)
@@ -184,7 +184,7 @@ class Window:
         has_errors: bool = False
         self.errors_text.delete('1.0', END)
         for token in tokens:
-            if token.code == Code.LC_ERR:
+            if token.code == Code.ERR:
                 index = self.get_tk_index(token.start)
                 self.errors_text.insert(END, f'{index}: {token.lex}\n')
                 has_errors = True

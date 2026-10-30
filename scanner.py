@@ -13,14 +13,14 @@ from typecode import TypeCode
 class Scanner:
     VARIANT: str = '15'
     KEYWORDS: dict[str, Code] = {
-        'procedure' + VARIANT: Code.LC_PROG,
-        Code.LC_USING.value + VARIANT: Code.LC_USING,
-        Code.LC_CLASS.value + VARIANT: Code.LC_CLASS,
-        Code.LC_VAR.value + VARIANT: Code.LC_VAR,
-        Code.LC_WHILE.value + VARIANT: Code.LC_WHILE,
-        Code.LC_TRUE.value: Code.LC_TRUE,
-        Code.LC_FALSE.value: Code.LC_FALSE,
-        'KuznetsovDA': Code.LC_FULLNAME,
+        'procedure' + VARIANT: Code.PROG,
+        Code.USING.value + VARIANT: Code.USING,
+        Code.CLASS.value + VARIANT: Code.CLASS,
+        Code.VAR.value + VARIANT: Code.VAR,
+        Code.WHILE.value + VARIANT: Code.WHILE,
+        Code.TRUE.value: Code.TRUE,
+        Code.FALSE.value: Code.FALSE,
+        'KuznetsovDA': Code.FULLNAME,
     }
     STATE_TABLE: dict[Char, dict[State, State]] = {
         Char.TAB: {
@@ -426,38 +426,38 @@ class Scanner:
         State.DASH_OTHER: 1,
     })
     STATE_TO_TOKEN_PARAMS: dict[State, tuple] = {
-        State.SEMICOLON: (Code.LC_SEMI,),
-        State.COLON: (Code.LC_COLON,),
-        State.DOT: (Code.LC_DOT,),
-        State.OP_PAR: (Code.LC_OP_PAR,),
-        State.CL_PAR: (Code.LC_CL_PAR,),
-        State.OP_CUR_BR: (Code.LC_OP_CUR_BR,),
-        State.CL_CUR_BR: (Code.LC_CL_CUR_BR,),
-        State.EXCL: (Code.LC_NOT,),
-        State.EQUALS: (Code.LC_REL, Attribute.OP_EQ),
-        State.PLUS: (Code.LC_ADD, Attribute.OP_ADD),
-        State.STAR: (Code.LC_MULT, Attribute.OP_MULT),
-        State.SLASH_OTHER: (Code.LC_MULT, Attribute.OP_DIV),
-        State.SLASH_EQUALS: (Code.LC_REL, Attribute.OP_NE),
-        State.AMP_AMP: (Code.LC_AND,),
-        State.VERT_SLASH_VERT_SLASH: (Code.LC_OR,),
-        State.LESS_OTHER: (Code.LC_REL, Attribute.OP_LT),
-        State.LESS_EQUALS: (Code.LC_REL, Attribute.OP_LE),
-        State.LESS_DASH: (Code.LC_ASS,),
-        State.LETTER_OTHER: (Code.LC_ID,),
-        State.GREATER_OTHER: (Code.LC_REL, Attribute.OP_GT),
-        State.GREATER_EQUALS: (Code.LC_REL, Attribute.OP_GE),
-        State.DIGIT_OTHER: (Code.LC_NUM,),
-        State.DIGIT_DOT_DIGIT_OTHER: (Code.LC_NUM,),
-        State.SPACE_OTHER: (Code.LC_SP,),
-        State.DASH_OTHER: (Code.LC_ADD, Attribute.OP_SUB,),
-        State.DASH_DASH_DASH_DASH: (Code.LC_COM,),
-        State.EOF: (Code.LC_EOF,),
-        State.ERR_START: (Code.LC_ERR,),
-        State.ERR_AMP: (Code.LC_ERR,),
-        State.ERR_VERT_SLASH: (Code.LC_ERR,),
-        State.ERR_NUMBER: (Code.LC_ERR,),
-        State.ERR_COMMENT_NOT_CLOSED: (Code.LC_ERR,),
+        State.SEMICOLON: (Code.SEMI,),
+        State.COLON: (Code.COLON,),
+        State.DOT: (Code.DOT,),
+        State.OP_PAR: (Code.OP_PAR,),
+        State.CL_PAR: (Code.CL_PAR,),
+        State.OP_CUR_BR: (Code.OP_CUR_BR,),
+        State.CL_CUR_BR: (Code.CL_CUR_BR,),
+        State.EXCL: (Code.NOT,),
+        State.EQUALS: (Code.REL, Attribute.OP_EQ),
+        State.PLUS: (Code.ADD, Attribute.OP_ADD),
+        State.STAR: (Code.MULT, Attribute.OP_MULT),
+        State.SLASH_OTHER: (Code.MULT, Attribute.OP_DIV),
+        State.SLASH_EQUALS: (Code.REL, Attribute.OP_NE),
+        State.AMP_AMP: (Code.AND,),
+        State.VERT_SLASH_VERT_SLASH: (Code.OR,),
+        State.LESS_OTHER: (Code.REL, Attribute.OP_LT),
+        State.LESS_EQUALS: (Code.REL, Attribute.OP_LE),
+        State.LESS_DASH: (Code.ASS,),
+        State.LETTER_OTHER: (Code.ID,),
+        State.GREATER_OTHER: (Code.REL, Attribute.OP_GT),
+        State.GREATER_EQUALS: (Code.REL, Attribute.OP_GE),
+        State.DIGIT_OTHER: (Code.NUM,),
+        State.DIGIT_DOT_DIGIT_OTHER: (Code.NUM,),
+        State.SPACE_OTHER: (Code.SP,),
+        State.DASH_OTHER: (Code.ADD, Attribute.OP_SUB,),
+        State.DASH_DASH_DASH_DASH: (Code.COM,),
+        State.EOF: (Code.EOF,),
+        State.ERR_START: (Code.ERR,),
+        State.ERR_AMP: (Code.ERR,),
+        State.ERR_VERT_SLASH: (Code.ERR,),
+        State.ERR_NUMBER: (Code.ERR,),
+        State.ERR_COMMENT_NOT_CLOSED: (Code.ERR,),
     }
 
     def __init__(self, code: str):
@@ -478,11 +478,11 @@ class Scanner:
         token.start = start
         token.end = self.pos
 
-        if token.code == Code.LC_ERR:
+        if token.code == Code.ERR:
             token.lex = self.ERROR_MESSAGES[self.state].format(self.code[token.end - 1:token.end])
             return token
 
-        if token.code not in (Code.LC_NUM, Code.LC_ID):
+        if token.code not in (Code.NUM, Code.ID):
             return token
 
         token.lex = self.code[token.start:token.end]
@@ -501,9 +501,9 @@ class Scanner:
             token.attr = i
             return token
 
-        if token.code == Code.LC_NUM and self.state == State.DIGIT_OTHER:
+        if token.code == Code.NUM and self.state == State.DIGIT_OTHER:
             symbol = Identifier(token.lex, Category.CONST, TypeCode.INTEGER)
-        elif token.code == Code.LC_NUM and self.state == State.DIGIT_DOT_DIGIT_OTHER:
+        elif token.code == Code.NUM and self.state == State.DIGIT_DOT_DIGIT_OTHER:
             symbol = Identifier(token.lex, Category.CONST, TypeCode.FLOAT)
         else:
             symbol = Identifier(token.lex)
@@ -533,7 +533,7 @@ class Scanner:
                 token: Token = self.form_token(start)
                 self.state = State.INITIAL
 
-                if token.code == Code.LC_SP:
+                if token.code == Code.SP:
                     start = self.pos
                     continue
 
