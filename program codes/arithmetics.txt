@@ -1,0 +1,18 @@
+-- Пример с арифметическими операциями --
+procedure15 KuznetsovDA;
+using15
+    i32 integer;
+    f64 float;
+    b1 boolean;
+var15
+    a: i32;
+    b: i32;
+    c: i32;
+    p: f64;
+    q: f64;
+    r: f64;
+{
+    a <- 76 + (36 - 28) * 56 / 32;
+    b <- a / c + b - a * c;
+    c <- (a * 38 - b) * 71 / c + 42;
+}

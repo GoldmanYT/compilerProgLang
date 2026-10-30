@@ -1,9 +1,11 @@
 from tkinter import *
-from tkinter.scrolledtext import ScrolledText
 from tkinter.ttk import *
+from tkinter.scrolledtext import ScrolledText
+from tkinter.filedialog import askopenfile, asksaveasfile
 from scanner import Scanner
 from codes import Code
 from tokens import Token
+from sct import Sct
 
 
 class UiLayoutConstructor:
@@ -46,7 +48,7 @@ class Window:
         rel_elem_half_right = UiLayoutConstructor(2, 'h')[1]
         rel_elem_95_5_v = UiLayoutConstructor((95, 5), 'v')
         rel_elem_80_20_v = UiLayoutConstructor((80, 20), 'v')
-        # rel_elem_10_90_v = UiLayoutConstructor((10, 90), 'v')
+        rel_elem_10_90_v = UiLayoutConstructor((10, 90), 'v')
 
         self.root = Tk()
         self.root.geometry('1200x800')
@@ -54,9 +56,9 @@ class Window:
         left_frame = Frame(self.root)
 
         top_left_frame = Labelframe(left_frame, text='Исходный код программы')
-        # save_load_button_frame = Frame(top_left_frame)
-        # load_button = Button(save_load_button_frame, text='Загрузить', command=self.load_button_action)
-        # save_button = Button(save_load_button_frame, text='Сохранить', command=self.save_button_action)
+        save_load_button_frame = Frame(top_left_frame)
+        load_button = Button(save_load_button_frame, text='Открыть', command=self.load_button_action)
+        save_button = Button(save_load_button_frame, text='Сохранить', command=self.save_button_action)
         self.program_code_text = ScrolledText(top_left_frame, font=('Consolas', 14))
 
         bottom_left_frame = Labelframe(left_frame, text='Список найденных ошибок')
@@ -98,22 +100,42 @@ class Window:
 
         left_frame.place(**rel_elem_half_left)
         top_left_frame.place(**rel_elem_80_20_v[0])
-        # save_load_button_frame.place(**rel_elem_10_90_v[0])
-        # load_button.place(**rel_elem_half_left)
-        # save_button.place(**rel_elem_half_right)
-        self.program_code_text.place(**rel_elem_full)
+        save_load_button_frame.place(**rel_elem_10_90_v[0])
+        load_button.place(**rel_elem_half_left)
+        save_button.place(**rel_elem_half_right)
+        self.program_code_text.place(**rel_elem_10_90_v[1])
 
         bottom_left_frame.place(**rel_elem_80_20_v[1])
         self.errors_text.place(**rel_elem_full)
 
         right_tab_widget.place(**rel_elem_half_right)
 
-        self.load_program_code()
-        self.update_syntax_highlight()
-
         self.indexes = []
+        self.current_file_name = 'new'
 
         self.root.mainloop()
+
+    def load_button_action(self):
+        file = askopenfile(
+            initialdir='./program codes',
+            filetypes=(('Текстовые документы', '*.txt'),),
+        )
+
+        if file is not None:
+            code = file.read()
+            self.current_file_name = file.name
+            self.load_program_code(code)
+
+    def save_button_action(self):
+        file = asksaveasfile(
+            initialdir='./program codes',
+            initialfile=self.current_file_name,
+            filetypes=(('Текстовые документы', '*.txt'),),
+            defaultextension='.txt'
+        )
+
+        if file is not None:
+            file.write(self.program_code_text.get('1.0', END))
 
     def get_tk_index(self, index):
         l = 0
@@ -126,13 +148,8 @@ class Window:
                 l = m
         return f'{l + 1}.{index - self.indexes[l] - 1}'
 
-    def load_program_code(self):
+    def load_program_code(self, code):
         self.program_code_text.delete('1.0', END)
-        try:
-            with open('program_code.txt', 'r', encoding='utf-8') as file:
-                code = file.read()
-        except FileNotFoundError:
-            code = ''
         self.program_code_text.insert(END, code)
 
         self.program_code_text.tag_configure('keyword', foreground='#ff7700')
@@ -141,6 +158,7 @@ class Window:
         self.program_code_text.tag_configure('error', background='#ff7777')
 
         self.program_code_text.bind("<KeyRelease>", self.update_syntax_highlight)
+        self.update_syntax_highlight()
 
     def update_syntax_highlight(self, *_):
         code_to_tag = {
@@ -192,7 +210,22 @@ class Window:
             self.errors_text.insert(END, 'Лексический анализ успешно завершен')
 
     def start_sgt_button_action(self, *_):
-        print('Запуск СУТ')
+        program_code: str = self.program_code_text.get('1.0', END)
+        scanner = Scanner(program_code)
+        tokens: Iterable[Token] = iter(scanner)
+        id_table: list[Identifier] = scanner.id_table
+        sct = Sct(tokens, id_table)
+        error_token = sct.scan()
+
+        self.errors_text.delete('1.0', END)
+        if error_token is not None:
+            index1 = self.get_tk_index(error_token.start)
+            index2 = self.get_tk_index(error_token.end)
+            self.program_code_text.tag_add('error', index1, index2)
+            lex: str = program_code[error_token.start:error_token.end]
+            self.errors_text.insert(END, error_token.lex.format(pos=index1, lex=lex, **error_token.kwargs))
+        else:
+            self.errors_text.insert(END, 'СУ-трансляция успешно завершена')
 
 
 if __name__ == '__main__':

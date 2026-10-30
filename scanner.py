@@ -515,12 +515,19 @@ class Scanner:
 
     def __iter__(self) -> Iterable[Token]:
         while self.pos < len(self.code):
-            yield self.get_next_token()
+            yield self.get_next_token(ignore_commentary=True)
 
     def get_tokens(self) -> list[Token]:
-        return [token for token in self]
+        token = None
+        tokens: list[Token] = []
 
-    def get_next_token(self) -> Token:
+        while token is None or token.code != Code.EOF:
+            token = self.get_next_token()
+            tokens.append(token)
+
+        return tokens
+
+    def get_next_token(self, ignore_commentary: bool = False) -> Token:
         start = self.pos
 
         while self.pos < len(self.code):
@@ -534,6 +541,10 @@ class Scanner:
                 self.state = State.INITIAL
 
                 if token.code == Code.SP:
+                    start = self.pos
+                    continue
+
+                if token.code == Code.COM and ignore_commentary:
                     start = self.pos
                     continue
 
