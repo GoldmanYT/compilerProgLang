@@ -550,10 +550,11 @@ class Scanner:
 
                 return token
 
+        self.state = State.EOF
         return self.form_token(start)
 
 
 if __name__ == '__main__':
-    scanner = Scanner('procedure15 var15 while15 true false integer float boolean')
+    scanner = Scanner('--')
     print(scanner.get_tokens())
     print(list(Scanner.KEYWORDS.keys()))

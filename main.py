@@ -115,6 +115,7 @@ class Window:
 
         self.indexes = []
         self.current_file_name = 'new'
+        self.load_program_code('')
 
         self.root.mainloop()
 
