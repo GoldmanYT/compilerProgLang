@@ -1,7 +1,10 @@
 from tkinter import *
 from tkinter.ttk import *
 from tkinter.scrolledtext import ScrolledText
-from tkinter.filedialog import askopenfile, asksaveasfile
+from tkinter.filedialog import askopenfilename, asksaveasfilename
+from typing import Iterable
+
+from identifier import Identifier
 from scanner import Scanner
 from codes import Code
 from tokens import Token
@@ -116,26 +119,28 @@ class Window:
         self.root.mainloop()
 
     def load_button_action(self):
-        file = askopenfile(
+        filename: str = askopenfilename(
             initialdir='./program codes',
             filetypes=(('Текстовые документы', '*.txt'),),
         )
 
-        if file is not None:
-            code = file.read()
-            self.current_file_name = file.name
-            self.load_program_code(code)
+        if filename != '':
+            with open(filename, encoding='utf-8') as file:
+                code = file.read()
+                self.current_file_name = file.name
+                self.load_program_code(code)
 
     def save_button_action(self):
-        file = asksaveasfile(
+        filename: str = asksaveasfilename(
             initialdir='./program codes',
             initialfile=self.current_file_name,
             filetypes=(('Текстовые документы', '*.txt'),),
             defaultextension='.txt'
         )
 
-        if file is not None:
-            file.write(self.program_code_text.get('1.0', END))
+        if filename != '':
+            with open(filename, 'w', encoding='utf-8') as file:
+                file.write(self.program_code_text.get('1.0', END))
 
     def get_tk_index(self, index):
         l = 0
@@ -211,7 +216,7 @@ class Window:
 
     def start_sgt_button_action(self, *_):
         program_code: str = self.program_code_text.get('1.0', END)
-        scanner = Scanner(program_code)
+        scanner: Scanner = Scanner(program_code)
         tokens: Iterable[Token] = iter(scanner)
         id_table: list[Identifier] = scanner.id_table
         sct = Sct(tokens, id_table)
