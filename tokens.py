@@ -15,6 +15,7 @@ class Token:
         self.start: int = start
         self.end: int = end
         self.lex: str | None = None
+        self.kwargs: dict = {}
 
     def __str__(self):
         attr: str = 'null'

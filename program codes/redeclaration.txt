@@ -1,0 +1,9 @@
+-- Базовый пример, минимальный по грамматике --
+procedure15 KuznetsovDA;
+var15
+    a: integer;
+    a: integer;
+{
+    a <- 1;
+}
+

@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter.ttk import *
 from tkinter.scrolledtext import ScrolledText
 from tkinter.filedialog import askopenfilename, asksaveasfilename
-from typing import Iterable
+from typing import Iterator
 
 from identifier import Identifier
 from scanner import Scanner
@@ -188,9 +188,11 @@ class Window:
         self.program_code_text.tag_configure('const', foreground='#0000ff')
         self.program_code_text.tag_configure('error', background='#ff7777')
 
-        code = self.program_code_text.get('1.0', END)
-        tokens = Scanner(code).get_tokens()
-        self.indexes = [-1] + [i for i in range(len(code)) if code[i] == '\n']
+        code: str = self.program_code_text.get('1.0', END)
+        scanner: Scanner = Scanner(code)
+        tokens: list[Token] = scanner.get_tokens()
+        self.indexes: list[int] = [-1] + [i for i in range(len(code)) if code[i] == '\n']
+
         for token in tokens:
             tag = code_to_tag.get(token.code)
             if tag is not None:
@@ -198,9 +200,19 @@ class Window:
                 index2 = self.get_tk_index(token.end)
                 self.program_code_text.tag_add(tag, index1, index2)
 
+        scanner.restart()
+        sct: Sct = Sct(iter(scanner), scanner.id_table)
+        error_token: Token = sct.scan()
+
+        if error_token is not None:
+            index1 = self.get_tk_index(error_token.start)
+            index2 = self.get_tk_index(error_token.end)
+            self.program_code_text.tag_add('error', index1, index2)
+
     def start_scanner_button_action(self):
         program_code: str = self.program_code_text.get('1.0', END)
-        tokens: list[Token] = Scanner(program_code).get_tokens()
+        scanner: Scanner = Scanner(program_code)
+        tokens: list[Token] = scanner.get_tokens()
 
         self.scanner_output_text.delete('1.0', END)
         self.scanner_output_text.insert(END, '\n'.join(str(token) for token in tokens))
@@ -218,7 +230,7 @@ class Window:
     def start_sgt_button_action(self, *_):
         program_code: str = self.program_code_text.get('1.0', END)
         scanner: Scanner = Scanner(program_code)
-        tokens: Iterable[Token] = iter(scanner)
+        tokens: Iterator[Token] = iter(scanner)
         id_table: list[Identifier] = scanner.id_table
         sct = Sct(tokens, id_table)
         error_token = sct.scan()

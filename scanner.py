@@ -464,14 +464,20 @@ class Scanner:
         self.code: str = code
         self.state: State = State.INITIAL
         self.pos: int = 0
-        self.id_table: list[Identifier] = [
+        self.id_table: list[Identifier] = []
+        self.restart()
+
+        if not self.code.endswith(Char.EOF.value):
+            self.code += Char.EOF.value
+
+    def restart(self):
+        self.state = State.INITIAL
+        self.pos = 0
+        self.id_table = [
             Identifier(TypeCode.INTEGER.value, Category.TYPE_NAME, TypeCode.INTEGER),
             Identifier(TypeCode.FLOAT.value, Category.TYPE_NAME, TypeCode.FLOAT),
             Identifier(TypeCode.BOOLEAN.value, Category.TYPE_NAME, TypeCode.BOOLEAN),
         ]
-
-        if not self.code.endswith(Char.EOF.value):
-            self.code += Char.EOF.value
 
     def form_token(self, start: int) -> Token:
         token: Token = Token(*self.STATE_TO_TOKEN_PARAMS[self.state])
@@ -492,11 +498,7 @@ class Scanner:
             token.lex = None
             return token
 
-        try:
-            i: int = [symbol.lex for symbol in self.id_table].index(token.lex)
-        except ValueError:
-            i: int = -1
-
+        i = find_in_id_table(self.id_table, token.lex)
         if i != -1:
             token.attr = i
             return token
@@ -552,6 +554,18 @@ class Scanner:
 
         self.state = State.EOF
         return self.form_token(start)
+
+
+def find_in_id_table(
+        id_table: list[Identifier],
+        lex: str,
+) -> int:
+    try:
+        i: int = [symbol.lex for symbol in id_table].index(lex)
+    except ValueError:
+        i: int = -1
+
+    return i
 
 
 if __name__ == '__main__':
