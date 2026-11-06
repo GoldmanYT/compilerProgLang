@@ -409,10 +409,10 @@ class Scanner:
         },
     }
     ERROR_MESSAGES = {
-        State.ERR_START: 'Встречен неожиданный символ: "{}"',
-        State.ERR_AMP: 'Встречено: "{}", ожидалось: "&"',
-        State.ERR_VERT_SLASH: 'Встречено: "{}", ожидалось: "|"',
-        State.ERR_NUMBER: 'Встречено: "{}", ожидалась цифра',
+        State.ERR_START: 'Встречен неожиданный символ: "{lex}"',
+        State.ERR_AMP: 'Встречено: "{lex}", ожидалось: "&"',
+        State.ERR_VERT_SLASH: 'Встречено: "{lex}", ожидалось: "|"',
+        State.ERR_NUMBER: 'Встречено: "{lex}", ожидалась цифра',
         State.ERR_COMMENT_NOT_CLOSED: 'Встречен конец файла, ожидалось: "--"',
     }
     SHIFT_BACK_TABLE: dict[State, int] = defaultdict(int, {
@@ -485,7 +485,7 @@ class Scanner:
         token.end = self.pos
 
         if token.code == Code.ERR:
-            token.lex = self.ERROR_MESSAGES[self.state].format(self.code[token.end - 1:token.end])
+            token.lex = self.ERROR_MESSAGES[self.state].format(lex=self.code[token.end - 1:token.end])
             return token
 
         if token.code not in (Code.NUM, Code.ID):

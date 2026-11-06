@@ -187,6 +187,7 @@ class Window:
         self.program_code_text.tag_configure('comment', foreground='#dd0000')
         self.program_code_text.tag_configure('const', foreground='#0000ff')
         self.program_code_text.tag_configure('error', background='#ff7777')
+        self.program_code_text.tag_configure('type', background='#900090')
 
         code: str = self.program_code_text.get('1.0', END)
         scanner: Scanner = Scanner(code)

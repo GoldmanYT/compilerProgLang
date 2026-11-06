@@ -9,7 +9,7 @@ class Code(Enum):
     WHILE = 'while'  # while15
     TRUE = 'true'
     FALSE = 'false'
-    FULLNAME = 'FIO'
+    FULLNAME = 'FIO'  # KuznetsovDA
     SEMI = ';'
     COLON = ':'
     DOT = '.'
@@ -33,3 +33,24 @@ class Code(Enum):
     GOTO = 'goto'
     IF = 'if'
     IF_FALSE = 'ifFalse'
+
+    def get_lex_info(self):
+        names = {
+            Code.PROG: 'procedure15',
+            Code.USING: 'using15',
+            Code.CLASS: 'class15',
+            Code.VAR: 'var15',
+            Code.WHILE: 'while15',
+            Code.FULLNAME: 'KuznetsovDA',
+            Code.ASS: '<-',
+            Code.ADD: 'аддитивная операция',
+            Code.MULT: 'мультипликативная операция',
+            Code.REL: 'операция отношения',
+            Code.ID: 'идентификатор',
+            Code.NUM: 'число',
+        }
+
+        if self in names:
+            return names[self]
+
+        return self.value

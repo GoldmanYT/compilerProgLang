@@ -24,11 +24,13 @@ class Sct:
     ):
         self.tokens: Iterator = tokens
         self.id_table = id_table
+        self.terminals: list[str] = []
+        self.non_terminals: list[str] = []
         self.grammar = {}
         self.actions: dict[str, Callable[[list[Any], Token], None | Token]] = {
-            'CheckRedeclaration': self.check_redeclaration,
-            'DeclareVariable': self.declare_variable,
-            'DeclareType': self.declare_type,
+            'A1': self.check_redeclaration,
+            'A2': self.declare_variable,
+            'A3': self.declare_type,
         }
         self.load_grammar()
 
@@ -90,19 +92,19 @@ class Sct:
         attr_stack: list[Any] = []
         token: Token = next(self.tokens)
         prev_token: Token = token
-        next_lexeme: str = token.code.value
-        left: str | None = None
+        lexeme: str = token.code.value
+        is_terminal: bool = True
 
         while state != 0:
-            if left is None:
-                lr_table_elem: LRTableElement = self.grammar[state][next_lexeme]
-            else:
-                lr_table_elem: LRTableElement = self.grammar[state][left]
+            if lexeme not in self.terminals + self.non_terminals:
+                return token
+
+            lr_table_elem: LRTableElement = self.grammar[state][lexeme]
 
             expected = ' или '.join(
-                f'"{lexeme}"' for lexeme in self.grammar[state]
+                f'"{Code.get_lex_info(Code(lexeme))}"' for lexeme in self.grammar[state]
                 if self.grammar[state][lexeme].elem_type != LRTableElemType.ERROR
-                and lexeme in (code.value for code in Code.__members__.values())
+                and lexeme in self.terminals
             )
 
             elem_param: int | None = lr_table_elem.elem_param
@@ -110,16 +112,18 @@ class Sct:
             if lr_table_elem.elem_type == LRTableElemType.SHIFT:
                 state = elem_param
                 state_stack.append(state)
-                if left is None:
+
+                if is_terminal:
                     prev_token = token
                     token: Token = next(self.tokens)
-                    next_lexeme = token.code.value
-                else:
-                    left = None
+
+                lexeme = token.code.value
+                is_terminal = True
 
             elif lr_table_elem.elem_type == LRTableElemType.FOLD:
                 pop_count: int = elem_param
-                left = lr_table_elem.left
+                lexeme = lr_table_elem.left
+                is_terminal = False
 
                 if len(state_stack) <= pop_count:
                     self.set_error_message(token, expected)
@@ -153,8 +157,19 @@ class Sct:
         self.grammar = {}
         root = parse_xml(xml_content)
 
-        col_num_to_lexeme = {}
+        columns = root.find('Columns')
 
+        terminals = columns.find('Terms')
+        for column in terminals.findall('Column'):
+            lexeme = column.get('Lexeme')
+            self.terminals.append(lexeme)
+
+        non_terminals = columns.find('Neterms')
+        for column in non_terminals.findall('Column'):
+            lexeme = column.get('Lexeme')
+            self.non_terminals.append(lexeme)
+
+        col_num_to_lexeme = {}
         for column in root.iter('Column'):
             col_num = column.get('ColNum')
             lexeme = column.get('Lexeme')

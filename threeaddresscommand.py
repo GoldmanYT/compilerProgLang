@@ -25,7 +25,9 @@ class ThreeAddressCommand:
         else:
             self.arg1 = None
 
-        if arg2 != -1:
+        if arg2 is True:
+            self.arg2 = True
+        elif arg2 != -1:
             self.arg2 = id_table[arg2].lex
         else:
             self.arg2 = None
@@ -42,3 +44,4 @@ if __name__ == '__main__':
     print(ThreeAddressCommand(id_table_, Operation(Code.GOTO), 50))
     print(ThreeAddressCommand(id_table_, Operation(Code.IF, Attribute.OP_LE), 50, 0, 1))
     print(ThreeAddressCommand(id_table_, Operation(Code.IF_FALSE, Attribute.OP_NE), 100, 0, 1))
+    print(ThreeAddressCommand(id_table_, Operation(Code.IF, Attribute.OP_EQ), 100, 0, True))
